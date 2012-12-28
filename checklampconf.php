@@ -133,8 +133,9 @@ class Apache{
                     $system -> show("Checking Apache Modules: Ok, ".implode(",",$this -> apacheModulesExpected)." found");
                 }
                 // check vhost
+                // todo: prendre en compte les alias, syntaxe type : Alias /soplanning "/var/www/tools/soplanning/" avec ou sans quote
                 $tmp = array();
-                $system -> Execute("grep -R \"".__DIR__."\" /etc/apache2/sites-enabled/",$tmp);
+                $system -> Execute("grep -R \"[\\\"\\']*".__DIR__."\"[/\\\"\\']*$ /etc/apache2/sites-enabled/",$tmp);
                 if(count($tmp) == 0){
                     $system -> show("Checking Apache Vhost: not vhost directly pointed to ".__DIR__." found, looking for upper level");
                 }
@@ -145,7 +146,7 @@ class Apache{
                     $tmp = array();
                     unset($dirTmp[$i]);
                     $dir = implode("/",$dirTmp);
-                    $system -> Execute("grep -R \"DocumentRoot /".$dir."\"$ /etc/apache2/sites-enabled/",$tmp);
+                    $system -> Execute("grep -R \"[\\\"\\']*/".$dir."\"[/\\\"\\']*$ /etc/apache2/sites-enabled/",$tmp);
                     if(count($tmp) == 0){
                         continue;
                     }
