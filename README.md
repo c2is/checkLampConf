@@ -18,6 +18,9 @@ $ chmod +x checklampconf.php
 ```bash
 $ ./checklampconf.php
 ```
-Adjust some vars according your needs :
-$processing -> params["apache.version"] = "2.2" ;
-$processing -> params["php.version"] = "5.3" ;
+Adjust some vars according your needs, for example :
+```php
+$processing -> params["apache"]["version"] = "2.2" ;
+$processing -> params["apache"]["modules"] = array("php5|suphp","rewrite","expires");
+$processing -> params["php"]["version"] = "5.3" ;
+```
