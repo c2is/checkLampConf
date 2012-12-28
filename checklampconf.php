@@ -83,7 +83,7 @@ class Apache{
                 $system -> Execute("cat /etc/apache2/envvars | grep APACHE_RUN_GROUP | sed -e 's/.*=//'",$this -> runGroup,"Checking Apache Run Group");
                 $system -> executeGetResults = true;
                 // check version
-                $system -> Execute("ps -ef | grep apache",$tmp);
+                $system -> Execute("ps -ef | grep /apache",$tmp);
                 $tmp = $tmp[0];
                 $tmp = explode(" ",$tmp);
                 foreach($tmp as $col){
@@ -130,13 +130,13 @@ class Apache{
                     $system -> show("Checking Apache Modules: ".implode(",",$missed)." expected but not found",true);
                 }
                 else{
-                    $system -> show("Checking Apache Modules: Ok, ".implode(",",$missed)." found");
+                    $system -> show("Checking Apache Modules: Ok, ".implode(",",$this -> apacheModulesExpected)." found");
                 }
                 // check vhost
                 $tmp = array();
                 $system -> Execute("grep -R \"".__DIR__."\" /etc/apache2/sites-enabled/",$tmp);
                 if(count($tmp) == 0){
-                    $system -> show("Checking Apache Vhost: not vhost directly pointed to ".__DIR__." found, looking for superior level");
+                    $system -> show("Checking Apache Vhost: not vhost directly pointed to ".__DIR__." found, looking for upper level");
                 }
                 $dirTmp = explode("/",__DIR__);
                 array_shift($dirTmp);
@@ -155,7 +155,7 @@ class Apache{
                     }
                 }
                 if(count($tmp) == 0){
-                    $system -> show("Checking Apache Vhost: no vhost points around /".$dir."",true);
+                    $system -> show("Checking Apache Vhost: no vhost points around ".__DIR__."",true);
                 }
                 unset($dirTmp[count($dirTmp)-1]);
                 $system -> executeGetResults = false;
