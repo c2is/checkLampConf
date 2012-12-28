@@ -107,10 +107,18 @@ class Apache{
                 // check modules
                 $tmp = array();
                 $missed = array();
-                $system -> Execute("/usr/sbin/apachectl -t -D DUMP_MODULES",$tmp);
+                $status = $system -> Execute("/usr/sbin/apachectl -t -D DUMP_MODULES",$tmp);
+                // si cette commande retourne une erreur on passe par une autre méthode
+                if($status != "0"){
+                    $tmp = array();
+                    $system -> Execute("ls /etc/apache2/mods-enabled/",$tmp);
+                }
                 $tmp = str_replace("_module (static)","",$tmp);
                 $tmp = str_replace("_module (shared)","",$tmp);
+                $tmp = str_replace(".load","",$tmp);
+                $tmp = str_replace(".conf","",$tmp);
                 $tmp = str_replace(" ","",$tmp);
+                $tmp = array_unique($tmp);
                 unset($tmp[0]);
                 foreach($this -> apacheModulesExpected as $module) {
                     if(strpos($module,"|")){
@@ -133,7 +141,6 @@ class Apache{
                     $system -> show("Checking Apache Modules: Ok, ".implode(",",$this -> apacheModulesExpected)." found");
                 }
                 // check vhost
-                // todo: prendre en compte les alias, syntaxe type : Alias /soplanning "/var/www/tools/soplanning/" avec ou sans quote
                 $tmp = array();
                 $system -> Execute("grep -R \"[\\\"\\']*".__DIR__."\"[/\\\"\\']*$ /etc/apache2/sites-enabled/",$tmp);
                 if(count($tmp) == 0){
