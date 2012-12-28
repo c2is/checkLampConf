@@ -6,7 +6,8 @@
  */
 $processing  = new Container();
 $processing -> params["apache"]["version"] = "2.2";
-$processing -> params["php"]["version"] = "5.5";
+$processing -> params["apache"]["modules"] = array("php5|suphp","rewrite","expires");
+$processing -> params["php"]["version"] = "5.3";
 $processing -> load() ;
 
 class System {
@@ -15,7 +16,7 @@ class System {
     var $executeGetResults = false;
     var $showFormat;
     public function __construct(){
-        $this -> commandsCheckList = array("lsb_release","cat","ls","cut","whoami","groups","php");
+        $this -> commandsCheckList = array("lsb_release","cat","ls","cut","whoami","groups","php","/usr/sbin/apachectl");
         $this -> showFormat = "\033[0;33m%s\033[0m\n";
         $this -> showAlertFormat = "\033[0;31m%s\033[0m\n";
         $this -> checkExeAndFiles();
@@ -72,6 +73,7 @@ class Apache{
     public function __construct($system,$apacheParams){
         $this -> system = $system;
         $this -> apacheVersionExpected = $apacheParams["version"];
+        $this -> apacheModulesExpected = $apacheParams["modules"];
         switch($this -> system -> sysId){
             case "Ubuntu":
             case "Debian":
@@ -103,9 +105,59 @@ class Apache{
                     $system -> show("Checking Apache Version: Ok, ".$this -> apacheVersionExpected." expected and ".$this -> version." installed");
                 }
                 // check modules
+                $tmp = array();
+                $missed = array();
+                $system -> Execute("/usr/sbin/apachectl -t -D DUMP_MODULES",$tmp);
+                $tmp = str_replace("_module (static)","",$tmp);
+                $tmp = str_replace("_module (shared)","",$tmp);
+                $tmp = str_replace(" ","",$tmp);
+                unset($tmp[0]);
+                foreach($this -> apacheModulesExpected as $module) {
+                    if(strpos($module,"|")){
+                        $module = explode("|",$module);
+                        if(! in_array($module[0],$tmp) && ! in_array($module[1],$tmp)){
+                           $missed[] = " one of the two (".$module[0]." or ".$module[1].")";
+                        }
+                    }
+                    else{
+                        if(! in_array($module,$tmp)){
+                            $missed[] = $module;
+                        }
+                    }
 
-
-
+                }
+                if(count($missed) > 0){
+                    $system -> show("Checking Apache Modules: ".implode(",",$missed)." expected but not found",true);
+                }
+                else{
+                    $system -> show("Checking Apache Modules: Ok, ".implode(",",$missed)." found");
+                }
+                // check vhost
+                $tmp = array();
+                $system -> Execute("grep -R \"".__DIR__."\" /etc/apache2/sites-enabled/",$tmp);
+                if(count($tmp) == 0){
+                    $system -> show("Checking Apache Vhost: not vhost directly pointed to ".__DIR__." found, looking for superior level");
+                }
+                $dirTmp = explode("/",__DIR__);
+                array_shift($dirTmp);
+                $dirTmpIndMax = count($dirTmp)-1;
+                for($i=$dirTmpIndMax;$i>0;$i--){
+                    $tmp = array();
+                    unset($dirTmp[$i]);
+                    $dir = implode("/",$dirTmp);
+                    $system -> Execute("grep -R \"DocumentRoot /".$dir."\"$ /etc/apache2/sites-enabled/",$tmp);
+                    if(count($tmp) == 0){
+                        continue;
+                    }
+                    else{
+                        $system -> show("Checking Apache Vhost: the nearest vhost points to /".$dir."");
+                        break;
+                    }
+                }
+                if(count($tmp) == 0){
+                    $system -> show("Checking Apache Vhost: no vhost points around /".$dir."",true);
+                }
+                unset($dirTmp[count($dirTmp)-1]);
                 $system -> executeGetResults = false;
             break;
         }
