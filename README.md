@@ -1,4 +1,4 @@
-checkLampConfig
+checkLampConf
 ===============
 
 Check services versions, directories rights, groups definitions etc.
