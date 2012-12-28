@@ -5,8 +5,8 @@
  * First run chmod +x checkconf.php
  */
 $processing  = new Container();
-$processing -> params["apache.version"] = "2.2" ;
-$processing -> params["php.version"] = "5.3" ;
+$processing -> params["apache"]["version"] = "2.2";
+$processing -> params["php"]["version"] = "5.5";
 $processing -> load() ;
 
 class System {
@@ -69,16 +69,18 @@ class System {
 }
 class Apache{
     var $system;
-    public function __construct($system,$apacheVersionExpected){
+    public function __construct($system,$apacheParams){
         $this -> system = $system;
-        $this -> apacheVersionExpected = $apacheVersionExpected;
+        $this -> apacheVersionExpected = $apacheParams["version"];
         switch($this -> system -> sysId){
             case "Ubuntu":
             case "Debian":
+                // check user:group
                 $tmp = array();
                 $system -> Execute("cat /etc/apache2/envvars | grep APACHE_RUN_USER | sed -e 's/.*=//'",$this -> runUser,"Checking Apache Run User");
                 $system -> Execute("cat /etc/apache2/envvars | grep APACHE_RUN_GROUP | sed -e 's/.*=//'",$this -> runGroup,"Checking Apache Run Group");
                 $system -> executeGetResults = true;
+                // check version
                 $system -> Execute("ps -ef | grep apache",$tmp);
                 $tmp = $tmp[0];
                 $tmp = explode(" ",$tmp);
@@ -100,6 +102,10 @@ class Apache{
                 else{
                     $system -> show("Checking Apache Version: Ok, ".$this -> apacheVersionExpected." expected and ".$this -> version." installed");
                 }
+                // check modules
+
+
+
                 $system -> executeGetResults = false;
             break;
         }
@@ -108,16 +114,16 @@ class Apache{
 }
 class Php{
     var $system;
-    public function __construct($system,$phpVersionMin){
+    public function __construct($system,$phpParams){
        $this -> system = $system;
-       $this -> phpVersionMin = $phpVersionMin;
+       $this -> phpVersionExpected = $phpParams["version"];
         $this -> version = phpversion();
 
-        if(! preg_match("/^".$this -> phpVersionMin."/i",$this -> version)){
-            $system -> show("Checking Php Version: mismatch, ".$this -> phpVersionMin." expected and ".$this -> version." installed",true);
+        if(! preg_match("/^".$this -> phpVersionExpected."/i",$this -> version)){
+            $system -> show("Checking Php CLI Version: mismatch, ".$this -> phpVersionExpected." expected and ".$this -> version." installed",true);
         }
         else{
-            $system -> show("Checking Php Version: Ok, ".$this -> phpVersionMin." expected and ".$this -> version." installed");
+            $system -> show("Checking Php CLI Version: Ok, ".$this -> phpVersionExpected." expected and ".$this -> version." installed");
         }
 
     }
@@ -171,8 +177,8 @@ class Container {
     var $services = array();
     var $params = array();
     function __construct(){
-        $this -> params["apache.version"] = "2";
-        $this -> params["php.version"] = "5.3";
+        $this -> params["apache"]["version"] = "2";
+        $this -> params["php"]["version"] = "5.3";
         $this->services["system"] = function($c){
             static $instance;
             if (!isset($instance)){
@@ -183,7 +189,7 @@ class Container {
         $this->services["apache"] = function($c){
             static $instance;
             if (!isset($instance)){
-                $instance = new Apache($c->services["system"]($c),$c -> params["apache.version"]);
+                $instance = new Apache($c->services["system"]($c),$c -> params["apache"]);
             }
             return $instance;
 
@@ -191,7 +197,7 @@ class Container {
         $this->services["php"] = function($c){
             static $instance;
             if (!isset($instance)){
-                $instance = new Php($c->services["system"]($c),$c -> params["php.version"]);
+                $instance = new Php($c->services["system"]($c),$c -> params["php"]);
             }
             return $instance;
 
