@@ -4,11 +4,27 @@
  * Check server configs
  * First run chmod +x checkconf.php
  */
-$processing  = new Container();
-$processing -> params["apache"]["version"] = "2.2";
-$processing -> params["apache"]["modules"] = array("php5|suphp","rewrite","expires");
-$processing -> params["php"]["version"] = "5.3";
-$processing -> load() ;
+if(! isset($_SERVER['argv'][1])){
+    $processing  = new Container();
+    $processing -> params["apache"]["version"] = "2.2";
+    $processing -> params["apache"]["modules"] = array("php5|suphp","rewrite","expires");
+    $processing -> params["php"]["version"] = "5.3";
+    $processing -> params["mysql"]["dbname"] = "cungfoo";
+    $processing -> params["mysql"]["user"] = "cungfoo";
+    $processing -> params["mysql"]["password"] = "and19cia";
+    $processing -> load() ;
+}
+else{
+    switch($_SERVER['argv'][1]){
+        case "help";
+            $processing  = new Container();
+            $processing -> system;
+            $processing -> help;
+        break;
+
+    }
+}
+
 
 class System {
     var $executeDisplay = false;
@@ -177,6 +193,85 @@ class Apache{
 
     }
 }
+class Mysql{
+    var $system;
+    var $myConnectId = null;
+    public function __construct($system,$mysqlParams){
+        $this -> system = $system;
+        $this -> mysqlVersionExpected = $mysqlParams["version"];
+        $this -> sqlserver = $mysqlParams["host"];
+        $err = false;
+        if($mysqlParams["dbname"]== ""){$system -> show("Checking Mysql: no db name given, please add one ",true); $err = true;}
+        if($mysqlParams["user"]== ""){$system -> show("Checking Mysql: no user name given, please add one ",true); $err = true;}
+        if($mysqlParams["password"]== ""){$system -> show("Checking Mysql: no password given, will try without "); }
+        if(! $err){
+            $this -> database = $mysqlParams["dbname"];
+            $this -> sqluser = $mysqlParams["user"];
+            $this -> sqlpassword = $mysqlParams["password"];
+            $this -> connectLaunch();
+            $q = "show variables";
+            $r = mysql_query($q);
+            while($row = mysql_fetch_array($r)){
+                if($row["Variable_name"] == "version"){
+                    $this -> version = $row["Value"];
+                }
+
+            }
+            $q = "GRANT ALL PRIVILEGES ON `".$this -> database."`.* TO '".$this -> sqluser."'@'".$this -> sqlserver."'";
+            $r = mysql_query($q);
+            // if the user hasn't enough privileges
+            if(! $r){
+                $system -> show("Checking Mysql Privileges: Ko, user ".$this -> sqluser." hasn't enough privileges",true);
+            }
+            else{
+                $system -> show("Checking Mysql Privileges: Ok, user ".$this -> sqluser." has all privileges on database ".$this -> database);
+            }
+
+            if(! preg_match("/^".$this -> mysqlVersionExpected."/i",$this -> version)){
+                 $system -> show("Checking Mysql Version: mismatch, ".$this -> mysqlVersionExpected." expected and ".$this -> version." installed",true);
+            }
+            else{
+                $system -> show("Checking Mysql Version: Ok, ".$this -> mysqlVersionExpected." expected and ".$this -> version." installed");
+            }
+            $this -> closeConnexions();
+        }
+        else{
+            $system -> show("Checking Mysql: impossible, some parameters are missing ",true);
+        }
+
+    }
+    public function connectLaunch()
+    {
+
+        if($this -> myConnectId == null)
+        {
+            $this -> myConnectId = @mysql_connect($this -> sqlserver, $this -> sqluser, $this -> sqlpassword);
+            if(mysql_error()){
+                $this -> system -> show("Connecting to Mysql server: Ko, please check host, user and password",true);
+            }
+            $this -> baseUse($this -> myConnectId,$this -> database);
+        }
+        return $this -> myConnectId;
+    }
+    protected function baseUse($connectId,$database){
+        if($connectId)
+        {
+            if($database != "")
+            {
+                mysql_select_db($database);
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+    public function closeConnexions(){
+        if($this -> myConnectId){
+             @mysql_close($this -> myConnectId);
+        }
+    }
+}
 class Php{
     var $system;
     public function __construct($system,$phpParams){
@@ -238,12 +333,31 @@ class Users {
         }
     }
 }
+class Help {
+    var $system;
+    public function __construct($system,$params){
+        $this -> system = $system;
+        $this -> system -> show("Here are parameters overridable");
+        foreach($params as $index=>$arr){
+            foreach($arr as $ind=>$value){
+                $this -> system -> show("\$this -> params['".$index."']['".$ind."'] = '".$value."'");
+            }
+        }
+
+
+    }
+}
 class Container {
     var $services = array();
     var $params = array();
     function __construct(){
         $this -> params["apache"]["version"] = "2";
         $this -> params["php"]["version"] = "5.3";
+        $this -> params["mysql"]["version"] = "5.1";
+        $this -> params["mysql"]["host"] = "localhost";
+        $this -> params["mysql"]["dbname"] = "";
+        $this -> params["mysql"]["user"] = "";
+        $this -> params["mysql"]["password"] = "";
         $this->services["system"] = function($c){
             static $instance;
             if (!isset($instance)){
@@ -255,6 +369,22 @@ class Container {
             static $instance;
             if (!isset($instance)){
                 $instance = new Apache($c->services["system"]($c),$c -> params["apache"]);
+            }
+            return $instance;
+
+        };
+        $this->services["mysql"] = function($c){
+            static $instance;
+            if (!isset($instance)){
+                $instance = new Mysql($c->services["system"]($c),$c -> params["mysql"]);
+            }
+            return $instance;
+
+        };
+        $this->services["help"] = function($c){
+            static $instance;
+            if (!isset($instance)){
+                $instance = new Help($c->services["system"]($c),$c -> params);
             }
             return $instance;
 
@@ -288,8 +418,10 @@ class Container {
 
     }
     function load(){
+        echo "Type ./".basename(__FILE__)." help to have more informations\n";
         $this -> users;
         $this -> php;
+        $this -> mysql;
     }
 
 }
