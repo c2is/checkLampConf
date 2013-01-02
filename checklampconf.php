@@ -84,7 +84,12 @@ class Apache{
                 $system -> executeGetResults = true;
                 // check version
                 $system -> Execute("ps -ef | grep /apache",$tmp);
-                $tmp = $tmp[count($tmp) - 1];
+                foreach($tmp as $line){
+                    if(preg_match("/^".$this -> runUser."/i",$line)){
+                        $tmp = $line;
+                        break;
+                    }
+                }
                 $tmp = explode(" ",$tmp);
                 foreach($tmp as $col){
                     if(strpos($col,"/apache") !== false){
