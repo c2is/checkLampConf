@@ -5,6 +5,7 @@
  * First run chmod +x checkconf.php
  *
  * @author  André Cianfarani <andre.cianfarani@c2is.fr>
+ * @package Checklampconf by C2IS
  */
 if(! isset($_SERVER['argv'][1])){
     $processing  = new Container();
