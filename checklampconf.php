@@ -19,7 +19,8 @@ if(! isset($_SERVER['argv'][1])){
 }
 else{
     switch($_SERVER['argv'][1]){
-        case "help";
+        case "-h" :
+        case "--help" :
             $processing  = new Container();
             $processing -> system;
             $processing -> help;
@@ -38,6 +39,12 @@ class System {
         $this -> commandsCheckList = array("lsb_release","cat","ls","cut","whoami","groups","php","/usr/sbin/apachectl");
         $this -> showFormat = "\033[0;33m%s\033[0m\n";
         $this -> showAlertFormat = "\033[0;31m%s\033[0m\n";
+
+        $this -> Execute("whoami",$runningUser,"Checking root user");
+        if($runningUser != "root"){
+            $this -> show("This script must be run by root user, aborting...",true);
+            die();
+        }
         $this -> checkExeAndFiles();
         $this->Execute("lsb_release -i | cut -d: -f2",$sysId,"Checking system id");
         $this->Execute("lsb_release -r | cut -d: -f2",$sysRelease,"Checking system release");
@@ -299,7 +306,13 @@ class Directories {
         $this -> apache = $apache;
         $system -> Execute("ls -ld ".__DIR__." | cut -d\" \" -f3",$this -> dirOwner,"Checking Dir Owner");
         $system -> Execute("ls -ld ".__DIR__." | cut -d\" \" -f3",$this -> dirGroup,"Checking Dir Group");
-        $system -> Execute("whoami",$this -> user,"Checking Whoami");
+        $system -> show("Type the sftp user's name:");
+        $this -> user = stream_get_line(STDIN, 1024, PHP_EOL);
+        $system -> Execute("cut -d: -f1 < /etc/passwd | grep ".$this -> user,$system -> tmp);
+        if ($system -> tmp == ""){
+            $system -> show("This user doesn't exist, aborting...");
+            die();
+        }
         if(!is_writable(__DIR__)){
             $this -> system -> show("Checking if ".__DIR__." is writable : false",true);
         }
