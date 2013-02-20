@@ -434,7 +434,7 @@ class Container {
 
     }
     function load(){
-        echo "Type ./".basename(__FILE__)." help to have more informations\n";
+        echo "Type ./".basename(__FILE__)." -h to have more informations\n";
         $this -> users;
         $this -> php;
         $this -> mysql;
