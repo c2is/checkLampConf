@@ -1,0 +1,4 @@
+test:
+    atoum:
+        directory:
+            - "tests/units/"
