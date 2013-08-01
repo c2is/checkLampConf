@@ -1,5 +1,4 @@
 test:
     atoum:
-        directory: "units/"
+        directory: "tests/units/"
         executable: "../../vendor/bin/atoum"
-        run_from: "tests/"
