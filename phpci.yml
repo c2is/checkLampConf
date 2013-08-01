@@ -1,4 +1,4 @@
 test:
     atoum:
         directory: "./tests/units/"
-        executable: "../../vendor/bin/atoum"
+        executable: "/var/www/PHPCI/vendor/bin/atoum"
