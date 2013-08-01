@@ -2,3 +2,5 @@ test:
     atoum:
         directory:
             - "tests/units/"
+        executable:
+            - "../../vendor/bin/atoum"
