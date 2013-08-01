@@ -14,7 +14,7 @@ if(! isset($_SERVER['argv'][1])){
     $processing -> params["php"]["version"] = "5.3";
     $processing -> params["mysql"]["dbname"] = "cungfoo";
     $processing -> params["mysql"]["user"] = "cungfoo";
-    $processing -> params["mysql"]["password"] = "and19cia";
+    $processing -> params["mysql"]["password"] = "somePass";
     $processing -> load() ;
 }
 else{
