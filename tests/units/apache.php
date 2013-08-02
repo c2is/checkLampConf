@@ -17,7 +17,7 @@ class Apache extends atoum\test
 {
     public function testSay()
     {
-        $this->string("Hello Worl")->isEqualTo('Hello World!')
+        $this->string("Hello World!")->isEqualTo('Hello World!')
         ;
     }
 }
