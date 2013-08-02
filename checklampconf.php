@@ -7,6 +7,8 @@
  * @author  André Cianfarani <andre.cianfarani@c2is.fr>
  * @package Checklampconf by C2IS
  */
+
+error_reporting(E_ERROR | E_PARSE);
 if(! isset($_SERVER['argv'][1])){
     $processing  = new Container();
     $processing -> params["apache"]["version"] = "2.2";
