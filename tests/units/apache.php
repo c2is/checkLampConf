@@ -6,10 +6,10 @@
 
 
 namespace tests\units;
-echo getcwd();
-require_once '.vendor/bin/atoum';
 
-include './checklampconf.php';
+require_once '/var/www/PHPCI/vendor/bin/atoum';
+
+include './qsdchecklampconf.php';
 
 use \mageekguy\atoum;
 
