@@ -6,7 +6,7 @@
 
 
 namespace tests\units;
-
+echo getcwd();
 require_once '.vendor/bin/atoum';
 
 include './checklampconf.php';
