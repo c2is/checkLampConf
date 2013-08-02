@@ -10,7 +10,7 @@ $p = getcwd();
 file_put_contents("/tmp/andre.log",$p);
 require_once 'vendor/bin/atoum';
 
-include './checklampconf.php';
+include realpath(__DIR__) . '../../checklampconf.php';
 
 use \mageekguy\atoum;
 
