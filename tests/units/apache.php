@@ -6,7 +6,8 @@
 
 
 namespace tests\units;
-
+echo "hhhhh";
+var_dump(getcwd());
 require_once '/var/www/PHPCI/vendor/bin/atoum';
 
 include './qsdchecklampconf.php';
