@@ -8,7 +8,6 @@
  * @package Checklampconf by C2IS
  */
 
-error_reporting(E_ERROR);
 if(! isset($_SERVER['argv'][1])){
     $processing  = new Container();
     $processing -> params["apache"]["version"] = "2.2";
@@ -309,7 +308,7 @@ class Directories {
         $system -> Execute("ls -ld ".__DIR__." | cut -d\" \" -f3",$this -> dirOwner,"Checking Dir Owner");
         $system -> Execute("ls -ld ".__DIR__." | cut -d\" \" -f3",$this -> dirGroup,"Checking Dir Group");
         $system -> show("Type the sftp user's name:");
-        $this -> user = stream_get_line(STDIN, 1024, PHP_EOL);
+        $this -> user = stream_get_line(fopen('php://stdin', 'r'), 1024, PHP_EOL);
         $system -> Execute("cut -d: -f1 < /etc/passwd | grep ".$this -> user,$system -> tmp);
         if ($system -> tmp == ""){
             $system -> show("This user doesn't exist, aborting...");
