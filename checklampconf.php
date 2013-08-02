@@ -8,7 +8,7 @@
  * @package Checklampconf by C2IS
  */
 
-error_reporting(E_ERROR | E_PARSE);
+error_reporting(E_ERROR);
 if(! isset($_SERVER['argv'][1])){
     $processing  = new Container();
     $processing -> params["apache"]["version"] = "2.2";
