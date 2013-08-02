@@ -6,8 +6,7 @@
 
 
 namespace tests\units;
-$p = getcwd();
-file_put_contents("/tmp/andre.log",$p);
+
 require_once 'vendor/bin/atoum';
 
 include realpath(__DIR__) . '/../../checklampconf.php';
@@ -18,7 +17,7 @@ class Apache extends atoum\test
 {
     public function testSay()
     {
-        $this->string("Hello World!")->isEqualTo('Hello World!')
+        $this->string("Hello Worl")->isEqualTo('Hello World!')
         ;
     }
 }
