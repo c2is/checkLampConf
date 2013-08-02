@@ -9,7 +9,7 @@ namespace tests\units;
 
 require_once '../../vendor/atoum/atoum/bin/atoum';
 
-include '../../includes/checklampconf.php';
+include './includes/checklampconf.php';
 
 use \mageekguy\atoum;
 
