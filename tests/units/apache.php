@@ -8,7 +8,7 @@
 namespace tests\units;
 $p = getcwd();
 file_put_contents("/tmp/andre.log",$p);
-require_once '../../PHPCI/vendor/bin/atoum';
+require_once 'vendor/bin/atoum';
 
 include './qsdchecklampconf.php';
 
