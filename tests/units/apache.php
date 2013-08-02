@@ -7,7 +7,7 @@
 
 namespace tests\units;
 
-require_once './atoum';
+require_once '/var/www/PHPCI/vendor/bin/atoum';
 
 include './includes/checklampconf.php';
 
